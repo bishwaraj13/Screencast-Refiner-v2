@@ -1,4 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from dotenv import load_dotenv
 import os
 from typing import Optional
@@ -7,7 +8,7 @@ from typing import Optional
 class MongoDBManager:
     _instance: Optional['MongoDBManager'] = None
     _client: Optional[AsyncIOMotorClient] = None
-    _db = None
+    _db: Optional[AsyncIOMotorDatabase] = None
 
     def __new__(cls):
         if cls._instance is None:
