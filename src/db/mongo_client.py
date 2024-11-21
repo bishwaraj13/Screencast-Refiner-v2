@@ -25,9 +25,7 @@ class MongoDBManager:
                     "MongoDB URI not found in environment variables")
 
             try:
-                self._client = AsyncIOMotorClient(mongo_uri,
-                                                  tz_aware=True,
-                                                  directConnection=True)
+                self._client = AsyncIOMotorClient(mongo_uri)
 
                 self._db = self._client[os.getenv(
                     'MONGODB_DATABASE', 'proscreenerDev')]
