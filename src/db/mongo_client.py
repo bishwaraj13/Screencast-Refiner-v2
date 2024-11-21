@@ -17,7 +17,6 @@ class MongoDBManager:
 
     async def initialize(self):
         """Initialize MongoDB connection"""
-        # Check explicitly for None instead of using truthiness
         if self._client is None:
             load_dotenv()
 
@@ -48,7 +47,7 @@ class MongoDBManager:
     @property
     def client(self) -> AsyncIOMotorClient:
         """Get MongoDB client"""
-        if self._client is None:  # Explicit None check
+        if self._client is None:
             raise RuntimeError(
                 "MongoDB client not initialized. Call initialize() first")
         return self._client
@@ -56,7 +55,7 @@ class MongoDBManager:
     @property
     def db(self):
         """Get default database"""
-        if self._db is None:  # Explicit None check
+        if self._db is None:
             raise RuntimeError(
                 "MongoDB database not initialized. Call initialize() first")
         return self._db
