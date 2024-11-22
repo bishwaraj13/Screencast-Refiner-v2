@@ -1,3 +1,17 @@
+"""
+This file provides functionality to preprocess videos by extracting metadata
+and generating audio files. It includes functions to fetch video records from
+a MongoDB database, extract video metadata, and generate audio files from videos.
+
+Functions:
+    step_10_00_preprocess_video(video_id: str, db: AsyncIOMotorDatabase) -> None:
+        Preprocess a video by extracting metadata and generating an audio file.
+    _extract_video_metadata(video_file: str) -> Dict[str, Optional[float]]:
+        Extract basic metadata from the video file.
+    _generate_audio_from_video(video_file: str, audio_path: Path) -> None:
+        Generate audio from the given video file and save it.
+"""
+import os
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -5,7 +19,6 @@ from bson import ObjectId
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from moviepy.editor import VideoFileClip
-import os
 
 from ..common.decorators.step_tracker import track_step
 
@@ -62,7 +75,7 @@ async def step_10_00_preprocess_video(video_id: str, db: AsyncIOMotorDatabase) -
         print("Video preprocessing completed successfully")
 
     except Exception as e:
-        raise RuntimeError(f"Video preprocessing failed: {str(e)}")
+        raise RuntimeError(f"Video preprocessing failed: {str(e)}") from e
 
 
 def _extract_video_metadata(video_file: str) -> Dict[str, Optional[float]]:
@@ -77,7 +90,7 @@ def _extract_video_metadata(video_file: str) -> Dict[str, Optional[float]]:
                 'audio_nchannels': video.audio.nchannels if video.audio else None
             }
     except Exception as e:
-        raise ValueError(f"Failed to extract video metadata: {str(e)}")
+        raise ValueError(f"Failed to extract video metadata: {str(e)}") from e
 
 
 def _generate_audio_from_video(video_file: str, audio_path: Path) -> None:
@@ -88,4 +101,4 @@ def _generate_audio_from_video(video_file: str, audio_path: Path) -> None:
                 raise ValueError("Video has no audio track")
             video.audio.write_audiofile(str(audio_path))
     except Exception as e:
-        raise ValueError(f"Failed to generate audio: {str(e)}")
+        raise ValueError(f"Failed to generate audio: {str(e)}") from e
