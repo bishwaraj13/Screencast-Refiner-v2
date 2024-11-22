@@ -1,4 +1,3 @@
-# decorators/step_tracker.py
 from functools import wraps
 from datetime import datetime
 import pytz
@@ -28,11 +27,13 @@ class StepTracker:
         return await self.db.videos.find_one({"_id": ObjectId(video_id)})
 
     async def _check_step_in_progress(self, video_id: str, step_name: str) -> None:
-        """Check if step is already in progress"""
+        """Check if step is already in progress or completed"""
         video_status = await self._get_video_status(video_id)
-        if video_status and video_status.get("steps_status", {}).get(f"{step_name}_inProgress"):
-            raise StepInProgressError(
-                f"Step '{step_name}' is already in progress for video {video_id}")
+        if video_status:
+            steps_status = video_status.get("steps_status", {})
+            if steps_status.get(f"{step_name}_inProgress") or steps_status.get(f"{step_name}_completed"):
+                raise StepInProgressError(
+                    f"Step '{step_name}' is already in progress or completed for video {video_id}")
 
     async def _log_error(self, video_id: str, step_name: str, error_logs: str) -> None:
         """Log error to pipeline_errors collection"""
@@ -49,36 +50,55 @@ class StepTracker:
         step_name: str,
         status: Dict[str, bool],
         timestamp_key: str,
+        unset_status: Optional[Dict[str, bool]] = {},
         execution_time: Optional[float] = None
     ):
         """Update step status in database"""
-        update_dict = {
+        set_dict = {
             f"timestamps.{timestamp_key}": datetime.now(self.ist_timezone)
         }
 
         # Update status flags
         for status_key, status_value in status.items():
-            update_dict[f"steps_status.{status_key}"] = status_value
+            set_dict[f"steps_status.{status_key}"] = status_value
 
         if execution_time is not None:
-            update_dict[f"execution_times.{step_name}"] = execution_time
+            set_dict[f"execution_times.{step_name}"] = execution_time
 
-        # Remove in_progress flag if step is completed
-        if f"{step_name}_completed" in status and status[f"{step_name}_completed"]:
+        # Unset status flags
+        unset_dict = {}
+        for unset_key, unset_value in unset_status.items():
+            unset_dict[f"steps_status.{unset_key}"] = unset_value
+
+        update_dict = {
+            "$set": set_dict
+        }
+
+        if unset_dict:
+            update_dict["$unset"] = unset_dict
+
+        if unset_dict:
             await self.db.videos.update_one(
                 {"_id": ObjectId(video_id)},
-                {
-                    "$set": update_dict,
-                    "$unset": {f"steps_status.{step_name}_inProgress": ""}
-                },
+                update_dict,
                 upsert=True
             )
-        else:
-            await self.db.videos.update_one(
-                {"_id": ObjectId(video_id)},
-                {"$set": update_dict},
-                upsert=True
-            )
+        # # Remove in_progress flag if step is completed
+        # if f"{step_name}_completed" in status and status[f"{step_name}_completed"]:
+        #     await self.db.videos.update_one(
+        #         {"_id": ObjectId(video_id)},
+        #         {
+        #             "$set": update_dict,
+        #             "$unset": {f"steps_status.{step_name}_inProgress": "", f"steps_status.{step_name}_error": ""}
+        #         },
+        #         upsert=True
+        #     )
+        # else:
+        #     await self.db.videos.update_one(
+        #         {"_id": ObjectId(video_id)},
+        #         {"$set": update_dict},
+        #         upsert=True
+        #     )
 
     async def _validate_dependencies(self, video_id: str, step_name: str) -> None:
         """Validate step dependencies before execution"""
@@ -115,7 +135,7 @@ def track_step(func):
             await tracker._update_step_status(
                 video_id,
                 step_name,
-                {f"{step_name}_completed": False},
+                {f"{step_name}_completed": False, f"{step_name}_error": True},
                 f"{step_name}_error_time"
             )
             raise
@@ -126,7 +146,8 @@ def track_step(func):
             video_id,
             step_name,
             {f"{step_name}_inProgress": True},
-            f"{step_name}_start_time"
+            f"{step_name}_start_time",
+            {f"{step_name}_completed": "", f"{step_name}_error": ""}
         )
 
         try:
@@ -142,6 +163,7 @@ def track_step(func):
                 step_name,
                 {f"{step_name}_completed": True},
                 f"{step_name}_end_time",
+                {f"{step_name}_inProgress": ""},
                 execution_time=execution_time
             )
 
@@ -156,8 +178,9 @@ def track_step(func):
             await tracker._update_step_status(
                 video_id,
                 step_name,
-                {f"{step_name}_completed": False},
+                {f"{step_name}_completed": False, f"{step_name}_error": True},
                 f"{step_name}_error_time",
+                {f"{step_name}_inProgress": ""},
                 execution_time=(error_time - start_time).total_seconds()
             )
             raise
