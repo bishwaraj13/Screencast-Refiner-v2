@@ -13,7 +13,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 from ..common.decorators.step_tracker import track_step
-from ..common.services.transcription_manager import _process_transcription
+from ..common.services.transcription_manager import process_transcription
 
 @track_step
 async def step_20_00_fetch_transcription(video_id: str, db: AsyncIOMotorDatabase) -> None:
@@ -42,7 +42,7 @@ async def step_20_00_fetch_transcription(video_id: str, db: AsyncIOMotorDatabase
             raise ValueError(f"Audio file not found for video ID: {video_id}")
 
         # Initialize Rev AI client and submit job
-        transcription_result = await _process_transcription(audio_file)
+        transcription_result = await process_transcription(audio_file)
 
         # Update database with transcription
         await db.transcriptions.insert_one(

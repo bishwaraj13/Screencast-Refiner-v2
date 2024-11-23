@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from rev_ai import apiclient
 from rev_ai.models import JobStatus
 
-async def _process_transcription(audio_file: str) -> dict:
+async def process_transcription(audio_file: str) -> dict:
     """
     Process audio file transcription using Rev AI service.
 
