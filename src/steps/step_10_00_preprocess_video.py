@@ -53,7 +53,7 @@ async def step_10_00_preprocess_video(video_id: str, db: AsyncIOMotorDatabase) -
 
         # Setup audio file path
         base_dir = Path(os.getenv('BASE_DIR', ''))
-        audio_dir = base_dir / "audio_files"
+        audio_dir = base_dir / f"{video_id}/audio_files"
         audio_dir.mkdir(parents=True, exist_ok=True)
         audio_path = audio_dir / f"{video_id}_audio.mp3"
 
