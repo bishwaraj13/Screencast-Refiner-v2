@@ -1,10 +1,6 @@
 """
-This file provides functionality to generate scene breakdowns from video transcriptions using Gemini AI.
+This file provides functionality to generate scene breakdowns from video transcriptions using content generation service.
 It includes functions to process transcriptions and create structured scene data.
-
-Functions:
-    step_30_00_generate_scenes(video_id: str, db: AsyncIOMotorDatabase) -> str:
-        Generate scene breakdowns from video transcription using Gemini AI service.
 """
 
 from bson import ObjectId

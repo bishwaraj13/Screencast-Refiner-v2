@@ -3,7 +3,7 @@ This file provides functionality to fetch transcriptions for audio files using R
 It includes functions to submit audio files for transcription and retrieve the results.
 
 Functions:
-    step_20_00_fetch_transcription(video_id: str, db: AsyncIOMotorDatabase) -> None:
+    step_20_00_transcribe_video(video_id: str, db: AsyncIOMotorDatabase) -> None:
         Fetch transcription for a video's audio file using Rev AI service.
 """
 
@@ -16,7 +16,7 @@ from ..common.decorators.step_tracker import track_step
 from ..common.services.transcription_manager import process_transcription
 
 @track_step
-async def step_20_00_fetch_transcription(video_id: str, db: AsyncIOMotorDatabase) -> None:
+async def step_20_00_transcribe_video(video_id: str, db: AsyncIOMotorDatabase) -> None:
     """
     Fetch transcription for a video's audio file using Rev AI service.
 
