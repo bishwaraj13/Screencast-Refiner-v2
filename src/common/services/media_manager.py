@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip
+from moviepy.editor import concatenate_videoclips
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 def extract_video_metadata(video_file: str) -> Dict[str, Optional[float]]:
@@ -78,3 +79,24 @@ def add_audio_to_video(video_path, audio_path, output_path):
     video.close()
     audio.close()
     video_with_audio.close()
+
+def concatenate_video_clips(video_clips: List[str], output_path: str) -> None:
+    """
+    Concatenate multiple video clips into a single video file.
+    
+    :param video_clips: List of video clips to concatenate
+    :param output_path: Path to save the concatenated video
+    """
+    # Load the video clips
+    clips = [VideoFileClip(clip) for clip in video_clips]
+
+    # Concatenate the clips
+    composite_video = concatenate_videoclips(clips)
+
+    # Write the result to a file
+    composite_video.write_videofile(output_path, codec='libx264', audio_codec='aac')
+
+    # Close the clips
+    composite_video.close()
+    for clip in clips:
+        clip.close()
