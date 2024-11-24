@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 from bson import ObjectId
 
-from moviepy.editor import VideoFileClip
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ..common.decorators.step_tracker import track_step
