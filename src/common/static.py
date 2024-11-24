@@ -4,7 +4,8 @@ STEP_DEPENDENCIES = {
     "step_30_00_make_scenes": ["step_20_00_transcribe_video"],
     "step_40_00_extract_clips": ["step_30_00_make_scenes"],
     "step_50_00_tts": ["step_30_00_make_scenes"],
-    "step_60_00_assemble_video": ["step_40_00_extract_clips", "step_50_00_tts"],
+    "step_60_00_add_voiceover": ["step_40_00_extract_clips", "step_50_00_tts"],
+    "step_70_00_assemble_video": ["step_60_00_add_voiceover"],
 }
 
 prompt_template = '''
